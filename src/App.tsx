@@ -259,7 +259,7 @@ export default function App() {
       `VC: ${getP(['VC', 'VC IN'])}`,
       `FVC: ${getP(['FVC'])}`,
       `FEV1: ${getP(['FEV1'])}`,
-      `Tiffenau: ${getP(['FEV1%FVC', 'FEV1/FVC', 'Tiffeneau', 'FEV1%', 'FEV1%I', 'FEV1%VC'])}`,
+      `FEV1/FVC: ${getP(['FEV1%FVC', 'FEV1/FVC', 'Tiffeneau', 'FEV1%', 'FEV1%I', 'FEV1%VC'])}`,
       `RV: ${getP(['RV', 'RV_SB'])}`,
       `TLC: ${getP(['TLC', 'TLC_SB'])}`,
       `Rtot: ${getP(['Rtot', 'sRtot'])}`,
