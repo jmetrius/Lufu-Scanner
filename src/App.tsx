@@ -54,7 +54,7 @@ export default function App() {
       const mimeType = base64Image.split(';')[0].split(':')[1];
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: [
           {
             inlineData: {
@@ -198,9 +198,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10" id="main-header">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-600">
+          <div className="flex items-center gap-2 text-blue-600" id="brand-logo">
             <Activity className="w-6 h-6" />
             <h1 className="text-xl font-semibold tracking-tight text-slate-900">LuFu Analysator</h1>
           </div>
@@ -212,17 +212,18 @@ export default function App() {
           
           {/* Left Column: Input & Image Preview */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6" id="upload-card">
+              <h2 className="text-lg font-medium mb-4 flex items-center gap-2" id="upload-title">
                 <Camera className="w-5 h-5 text-slate-500" />
                 Befund hochladen
               </h2>
               
               {!imageSrc ? (
-                <div className="space-y-4">
+                <div className="space-y-4" id="upload-options">
                   <div 
                     className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
+                    id="dropzone"
                   >
                     <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
                     <p className="text-sm font-medium text-slate-700 mb-1">Klicken Sie hier, um ein Bild auszuwählen</p>
@@ -233,10 +234,11 @@ export default function App() {
                       onChange={handleImageUpload} 
                       accept="image/*" 
                       className="hidden" 
+                      id="file-input"
                     />
                   </div>
                   
-                  <div className="relative flex items-center py-2">
+                  <div className="relative flex items-center py-2" id="separator">
                     <div className="flex-grow border-t border-slate-200"></div>
                     <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">oder</span>
                     <div className="flex-grow border-t border-slate-200"></div>
@@ -245,20 +247,22 @@ export default function App() {
                   <button 
                     onClick={handleManualEntry}
                     className="w-full bg-white border border-slate-300 text-slate-700 py-3 px-4 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                    id="manual-entry-btn"
                   >
                     <Edit3 className="w-4 h-4" />
                     Manuelle Eingabe
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[3/4] flex items-center justify-center">
-                    <img src={imageSrc} alt="Hochgeladener Befund" className="max-w-full max-h-full object-contain" />
+                <div className="space-y-4" id="preview-section">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[3/4] flex items-center justify-center" id="image-preview-container">
+                    <img src={imageSrc} alt="Hochgeladener Befund" className="max-w-full max-h-full object-contain" id="preview-image" />
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3" id="preview-actions">
                     <button 
                       onClick={() => fileInputRef.current?.click()}
                       className="flex-1 bg-white border border-slate-300 text-slate-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                      id="retake-image-btn"
                     >
                       <ImageIcon className="w-4 h-4" />
                       Neues Bild
@@ -266,6 +270,7 @@ export default function App() {
                     <button 
                       onClick={handleManualEntry}
                       className="flex-1 bg-white border border-slate-300 text-slate-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                      id="manual-switch-btn"
                     >
                       <Edit3 className="w-4 h-4" />
                       Manuell
@@ -277,6 +282,7 @@ export default function App() {
                     onChange={handleImageUpload} 
                     accept="image/*" 
                     className="hidden" 
+                    id="file-input-alt"
                   />
                 </div>
               )}
@@ -286,7 +292,7 @@ export default function App() {
           {/* Right Column: Results */}
           <div className="lg:col-span-7 space-y-6">
             {isAnalyzing && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]" id="analyzing-loader">
                 <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
                 <h3 className="text-lg font-medium text-slate-900 mb-2">Befund wird analysiert...</h3>
                 <p className="text-sm text-slate-500 max-w-sm">
@@ -296,7 +302,7 @@ export default function App() {
             )}
 
             {error && !isAnalyzing && (
-              <div className="bg-red-50 rounded-2xl border border-red-200 p-6 flex items-start gap-3">
+              <div className="bg-red-50 rounded-2xl border border-red-200 p-6 flex items-start gap-3" id="error-message">
                 <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-sm font-medium text-red-800 mb-1">Fehler</h3>
@@ -306,17 +312,17 @@ export default function App() {
             )}
 
             {!isAnalyzing && extractedData.length === 0 && !imageSrc && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px] text-slate-500">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px] text-slate-500" id="empty-state">
                 <FileText className="w-12 h-12 text-slate-300 mb-4" />
                 <p className="text-base">Laden Sie ein Bild hoch oder wählen Sie die manuelle Eingabe, um die Analyse zu starten.</p>
               </div>
             )}
 
             {!isAnalyzing && extractedData.length > 0 && (
-              <div className="space-y-6">
+              <div className="space-y-6" id="results-container">
                 {/* Interpretation Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" id="interpretation-card">
+                  <div className="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-center justify-between" id="interpretation-header">
                     <div className="flex items-center gap-2">
                       <Activity className="w-5 h-5 text-blue-600" />
                       <h2 className="text-base font-medium text-blue-900">Interpretation (Engine)</h2>
@@ -325,22 +331,24 @@ export default function App() {
                       onClick={copyToClipboard}
                       className="flex items-center gap-1.5 text-xs font-medium bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
                       title="Als Text kopieren"
+                      id="copy-btn"
                     >
                       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       {copied ? "Kopiert" : "Kopieren"}
                     </button>
                   </div>
-                  <div className="p-6">
-                    <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  <div className="p-6" id="interpretation-content">
+                    <p className="text-slate-700 leading-relaxed whitespace-pre-wrap" id="main-interpretation-text">
                       {interpretation}
                     </p>
 
                     {/* AI Interpretation Section */}
-                    <div className="mt-6 border-t border-slate-100 pt-6">
+                    <div className="mt-6 border-t border-slate-100 pt-6" id="ai-interpretation-section">
                       {!aiInterpretation && !isAiAnalyzing && (
                         <button 
                           onClick={requestAiInterpretation} 
                           className="flex items-center gap-2 text-sm font-medium text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-4 py-2.5 rounded-xl transition-colors"
+                          id="request-ai-btn"
                         >
                           <Sparkles className="w-4 h-4" />
                           Erweiterte KI-Tiefenanalyse anfordern
@@ -348,19 +356,19 @@ export default function App() {
                       )}
                       
                       {isAiAnalyzing && (
-                        <div className="flex items-center gap-3 text-sm text-purple-700 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl">
+                        <div className="flex items-center gap-3 text-sm text-purple-700 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl" id="ai-analyzing-indicator">
                           <Loader2 className="w-4 h-4 animate-spin" />
                           KI analysiert Daten im Detail...
                         </div>
                       )}
                       
                       {aiInterpretation && (
-                        <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-xl p-6">
+                        <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-xl p-6" id="ai-result-card">
                           <h3 className="text-sm font-semibold text-purple-900 mb-4 flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-purple-600" />
                             KI-Tiefenanalyse
                           </h3>
-                          <div className="text-sm text-slate-700 leading-relaxed [&>p]:mb-4 last:[&>p]:mb-0 [&>h1]:text-lg [&>h1]:font-semibold [&>h1]:mb-3 [&>h1]:text-purple-900 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mb-2 [&>h2]:text-purple-900 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mb-2 [&>h3]:text-purple-900 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>li]:mb-1 [&>strong]:font-semibold [&>strong]:text-purple-900">
+                          <div className="text-sm text-slate-700 leading-relaxed [&>p]:mb-4 last:[&>p]:mb-0 [&>h1]:text-lg [&>h1]:font-semibold [&>h1]:mb-3 [&>h1]:text-purple-900 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mb-2 [&>h2]:text-purple-900 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mb-2 [&>h3]:text-purple-900 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>li]:mb-1 [&>strong]:font-semibold [&>strong]:text-purple-900" id="ai-markdown-content">
                             <Markdown>{aiInterpretation}</Markdown>
                           </div>
                         </div>
@@ -370,15 +378,15 @@ export default function App() {
                 </div>
 
                 {/* Extracted Data Table */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" id="data-table-card">
+                  <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between" id="data-table-header">
                     <h2 className="text-base font-medium text-slate-900">Messwerte</h2>
                     <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">
                       Editierbar
                     </span>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                  <div className="overflow-x-auto" id="table-scroll-container">
+                    <table className="w-full text-sm text-left" id="data-table">
                       <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                         <tr>
                           <th className="px-4 py-3 font-medium">Parameter</th>
@@ -399,6 +407,7 @@ export default function App() {
                                 onChange={(e) => handleDataChange(index, 'parameter', e.target.value)}
                                 className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 outline-none transition-colors"
                                 placeholder="Parameter"
+                                id={`param-${index}`}
                               />
                             </td>
                             <td className="px-2 py-2">
@@ -409,6 +418,7 @@ export default function App() {
                                 className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 outline-none transition-colors text-right tabular-nums"
                                 placeholder="-"
                                 step="any"
+                                id={`value-${index}`}
                               />
                             </td>
                             <td className="px-2 py-2">
@@ -419,6 +429,7 @@ export default function App() {
                                 className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 outline-none transition-colors text-right tabular-nums text-slate-500"
                                 placeholder="-"
                                 step="any"
+                                id={`pred-${index}`}
                               />
                             </td>
                             <td className="px-2 py-2">
@@ -433,6 +444,7 @@ export default function App() {
                                 }`}
                                 placeholder="-"
                                 step="any"
+                                id={`percent-${index}`}
                               />
                             </td>
                             <td className="px-2 py-2">
@@ -442,6 +454,7 @@ export default function App() {
                                 onChange={(e) => handleDataChange(index, 'unit', e.target.value)}
                                 className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white rounded px-2 py-1 outline-none transition-colors text-slate-500"
                                 placeholder="-"
+                                id={`unit-${index}`}
                               />
                             </td>
                             <td className="px-2 py-2 text-center">
@@ -449,6 +462,7 @@ export default function App() {
                                 onClick={() => handleDeleteRow(index)}
                                 className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                                 title="Zeile löschen"
+                                id={`delete-${index}`}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -458,10 +472,11 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
-                  <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-between items-center">
+                  <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-between items-center" id="table-footer">
                     <button 
                       onClick={handleAddRow}
                       className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1.5"
+                      id="add-param-btn"
                     >
                       <Plus className="w-4 h-4" />
                       Parameter hinzufügen
