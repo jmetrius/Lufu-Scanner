@@ -256,13 +256,13 @@ export default function App() {
     };
 
     const text = [
-      `VC: ${getP(['VC', 'VC IN'])}`,
+      `VC: ${getP(['VC'])}`,
       `FVC: ${getP(['FVC'])}`,
       `FEV1: ${getP(['FEV1'])}`,
-      `FEV1/FVC: ${getP(['FEV1%FVC', 'FEV1/FVC', 'Tiffeneau', 'FEV1%', 'FEV1%I', 'FEV1%VC'])}`,
-      `RV: ${getP(['RV', 'RV_SB'])}`,
-      `TLC: ${getP(['TLC', 'TLC_SB'])}`,
-      `Rtot: ${getP(['Rtot', 'sRtot'])}`,
+      `FEV1/FVC: ${getP(['FEV1%FVC', 'FEV1/FVC'])}`,
+      `RV: ${getP(['RV'])}`,
+      `TLC: ${getP(['TLC'])}`,
+      `Rtot: ${getP(['Rtot'])}`,
       `DLCO_SB: ${getP(['DLCO_SB', 'DLCO', 'DLCOcSB'])}`,
       `KCO_SB: ${getP(['KCO_SB', 'KCO'])}`,
       "",
