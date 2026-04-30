@@ -1,0 +1,5 @@
+{
+  "name": "Lungenfunktion-Analysator",
+  "description": "App zur Analyse und Interpretation von Bodyplethysmographie-Daten aus Bildern.",
+  "requestFramePermissions": ["camera"]
+}
