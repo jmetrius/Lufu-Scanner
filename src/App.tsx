@@ -10,13 +10,59 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export default function App() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisPhase, setAnalysisPhase] = useState<string>("");
+  const [progress, setProgress] = useState(0);
   const [extractedData, setExtractedData] = useState<ExtractedParameter[]>([]);
   const [interpretation, setInterpretation] = useState<string>("");
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [aiProgress, setAiProgress] = useState(0);
+  const [error, setError] = useState<{title: string, message: string} | null>(null);
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let interval: any;
+    if (isAnalyzing) {
+      setProgress(5);
+      setAnalysisPhase("Bild wird vorbereitet...");
+      
+      interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 30) {
+            setAnalysisPhase("KI-Modell wird geladen...");
+            return prev + 2;
+          }
+          if (prev < 70) {
+            setAnalysisPhase("Lungenfunktion-Daten werden extrahiert...");
+            return prev + 1;
+          }
+          if (prev < 90) {
+            setAnalysisPhase("Messwerte werden verarbeitet...");
+            return prev + 0.5;
+          }
+          return prev;
+        });
+      }, 200);
+    } else {
+      setProgress(0);
+      setAnalysisPhase("");
+    }
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
+
+  useEffect(() => {
+    let interval: any;
+    if (isAiAnalyzing) {
+      setAiProgress(10);
+      interval = setInterval(() => {
+        setAiProgress(prev => prev < 95 ? prev + 2 : prev);
+      }, 300);
+    } else {
+      setAiProgress(0);
+    }
+    return () => clearInterval(interval);
+  }, [isAiAnalyzing]);
 
   useEffect(() => {
     if (extractedData.length > 0) {
@@ -29,6 +75,13 @@ export default function App() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setError({
+          title: "Datei zu groß",
+          message: "Das Bild überschreitet das Limit von 10 MB. Bitte verwenden Sie ein kleineres Bild."
+        });
+        return;
+      }
       processFile(file);
     }
   };
@@ -39,6 +92,12 @@ export default function App() {
       const base64String = reader.result as string;
       setImageSrc(base64String);
       analyzeImage(base64String);
+    };
+    reader.onerror = () => {
+      setError({
+        title: "Dateifehler",
+        message: "Die Datei konnte nicht gelesen werden. Bitte versuchen Sie es mit einem anderen Bild."
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -90,21 +149,38 @@ export default function App() {
       });
 
       if (response.text) {
+        setProgress(100);
+        setAnalysisPhase("Analyse abgeschlossen");
         const parsedResult = JSON.parse(response.text);
-        setExtractedData(parsedResult.extractedData || []);
+        if (!parsedResult.extractedData || parsedResult.extractedData.length === 0) {
+          setError({
+            title: "Keine Daten gefunden",
+            message: "Im Bild konnten keine relevanten Lungenfunktions-Parameter erkannt werden. Bitte achten Sie auf eine gute Beleuchtung und Schärfe des Fotos."
+          });
+        } else {
+          setExtractedData(parsedResult.extractedData);
+        }
       } else {
         throw new Error("Keine Antwort vom Modell erhalten.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Fehler bei der Analyse:", err);
-      setError("Es gab einen Fehler bei der Analyse des Bildes. Bitte versuchen Sie es erneut.");
+      let message = "Die Analyse konnte nicht durchgeführt werden. Bitte prüfen Sie Ihre Internetverbindung oder versuchen Sie es mit einer klareren Aufnahme.";
+      if (err?.message?.includes("quota")) {
+        message = "Das Kontingent für die KI-Analyse ist aktuell erschöpft. Bitte versuchen Sie es in Kürze erneut.";
+      }
+      setError({
+        title: "Analyse fehlgeschlagen",
+        message
+      });
     } finally {
-      setIsAnalyzing(false);
+      setTimeout(() => setIsAnalyzing(false), 500);
     }
   };
 
   const requestAiInterpretation = async () => {
     setIsAiAnalyzing(true);
+    setError(null);
     try {
       const validData = extractedData.filter(d => d.value !== null);
       const dataString = validData.map(d => 
@@ -117,13 +193,17 @@ export default function App() {
       });
 
       if (response.text) {
+        setAiProgress(100);
         setAiInterpretation(response.text);
       }
     } catch (err) {
       console.error("Fehler bei der KI-Tiefenanalyse:", err);
-      setError("Fehler bei der KI-Analyse. Bitte versuchen Sie es später erneut.");
+      setError({
+        title: "KI-Analyse unterbrochen",
+        message: "Die detaillierte KI-Interpretation konnte nicht generiert werden. Bitte versuchen Sie es noch einmal."
+      });
     } finally {
-      setIsAiAnalyzing(false);
+      setTimeout(() => setIsAiAnalyzing(false), 300);
     }
   };
 
@@ -292,12 +372,27 @@ export default function App() {
           {/* Right Column: Results */}
           <div className="lg:col-span-7 space-y-6">
             {isAnalyzing && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]" id="analyzing-loader">
-                <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
-                <h3 className="text-lg font-medium text-slate-900 mb-2">Befund wird analysiert...</h3>
-                <p className="text-sm text-slate-500 max-w-sm">
-                  Die KI liest die Daten aus dem Bild aus. Dies kann einige Sekunden dauern.
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col items-center justify-center text-center h-full min-h-[400px]" id="analyzing-loader">
+                <div className="relative mb-8">
+                  <div className="w-20 h-20 border-4 border-slate-100 rounded-full flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-blue-900">{Math.round(progress)}%</span>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-medium text-slate-900 mb-2">{analysisPhase}</h3>
+                <p className="text-sm text-slate-500 max-w-sm mb-8">
+                  Die KI liest die Daten aus dem Bild aus. Bitte lassen Sie das Fenster geöffnet.
                 </p>
+                
+                <div className="w-full max-w-xs bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
+                  <div 
+                    className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
               </div>
             )}
 
@@ -305,8 +400,14 @@ export default function App() {
               <div className="bg-red-50 rounded-2xl border border-red-200 p-6 flex items-start gap-3" id="error-message">
                 <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-medium text-red-800 mb-1">Fehler</h3>
-                  <p className="text-sm text-red-600">{error}</p>
+                  <h3 className="text-sm font-bold text-red-800 mb-1">{error.title}</h3>
+                  <p className="text-sm text-red-700 leading-relaxed">{error.message}</p>
+                  <button 
+                    onClick={() => setError(null)}
+                    className="mt-3 text-xs font-semibold text-red-800 hover:underline"
+                  >
+                    Schließen
+                  </button>
                 </div>
               </div>
             )}
@@ -356,9 +457,17 @@ export default function App() {
                       )}
                       
                       {isAiAnalyzing && (
-                        <div className="flex items-center gap-3 text-sm text-purple-700 bg-purple-50 border border-purple-100 px-4 py-3 rounded-xl" id="ai-analyzing-indicator">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          KI analysiert Daten im Detail...
+                        <div className="bg-purple-50 border border-purple-100 px-4 py-4 rounded-xl space-y-3" id="ai-analyzing-indicator">
+                          <div className="flex items-center gap-3 text-sm text-purple-800 font-medium">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            KI analysiert Daten im Detail...
+                          </div>
+                          <div className="w-full bg-purple-100 rounded-full h-1.5 overflow-hidden">
+                            <div 
+                              className="bg-purple-500 h-full transition-all duration-300"
+                              style={{ width: `${aiProgress}%` }}
+                            ></div>
+                          </div>
                         </div>
                       )}
                       
